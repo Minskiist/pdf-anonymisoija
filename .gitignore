@@ -1,0 +1,18 @@
+﻿# Python
+venv/
+Anonymisointityökalu/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.db
+*.sqlite3
+data/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Misc
+.pytest_cache/
+*.zip

@@ -46,8 +46,8 @@ class Settings(BaseSettings):
 
     # --- Placeholder-formaatti ---
     # KÃ¤ytetÃ¤Ã¤n: âŸ¦TYYPPI_0001âŸ§
-    placeholder_open: str = "âŸ¦"
-    placeholder_close: str = "âŸ§"
+    placeholder_open: str = "⟦"
+    placeholder_close: str = "⟧"
 
     # --- PDF ---
     max_pdf_size_mb: int = 50

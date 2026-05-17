@@ -65,7 +65,7 @@ def _delete_all_texts() -> None:
 
 @app.post("/api/analyze")
 async def analyze_pdf(file: UploadFile = File(...)):
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
+    if not file.filename or not file.filename.lower().endswith((".pdf", ".docx")):
         raise HTTPException(status_code=400, detail="Vain PDF-tiedostot ovat tuettuja.")
     pdf_bytes = await file.read()
     max_bytes = settings.max_pdf_size_mb * 1024 * 1024

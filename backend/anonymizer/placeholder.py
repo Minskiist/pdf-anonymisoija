@@ -152,7 +152,7 @@ class PlaceholderEngine:
 
         for mapping in sorted_mappings:
             # Case-insensitive haku, säilytetään konteksti
-            pattern = re.compile(r'\b' + re.escape(mapping.original_value) + r'\b', re.IGNORECASE)
+            pattern = re.compile(r'(?<![a-zA-ZäöåÄÖÅ])' + re.escape(mapping.original_value) + r'(?![a-zA-ZäöåÄÖÅ])', re.IGNORECASE)
             matches = pattern.findall(result)
 
             if matches:

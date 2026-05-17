@@ -68,7 +68,7 @@ export default function App() {
   const [hoveredMapping, setHoveredMapping] = useState(null)
 
   const handleFile = useCallback(async (file) => {
-    if (!file || !file.name.endsWith(".pdf")) { setError("Vain PDF-tiedostot."); return }
+    if (!file || !file.name.endsWith(".pdf") && !file.name.endsWith(".docx")) { setError("Vain PDF- ja Word-tiedostot."); return }
     setLoading(true); setError(null)
     const form = new FormData()
     form.append("file", file)
@@ -89,6 +89,14 @@ export default function App() {
   const handleRemove = async (value) => {
     await axios.post(`${API}/mapping/remove`, { session_id: sessionId, value })
     setMappings(m => m.filter(x => x.value !== value))
+  }
+
+  const handleRemoveAllOfType = async (typeCode) => {
+    const toRemove = mappings.filter(m => m.type_code === typeCode)
+    for (const m of toRemove) {
+      await axios.post(`${API}/mapping/remove`, { session_id: sessionId, value: m.value })
+    }
+    setMappings(m => m.filter(x => x.type_code !== typeCode))
   }
 
   const handleAddManual = async () => {
@@ -144,12 +152,12 @@ export default function App() {
 
         {phase === "upload" && (
           <div style={s.uploadWrap}>
-            <h1 style={s.title}>PDF-dokumentin anonymisointi</h1>
+            <h1 style={s.title}>PDF- ja Word-dokumentin anonymisointi</h1>
             <p style={s.subtitle}>Poistaa henkilotiedot ennen kuin annat dokumentin tekoalylle.</p>
             <div style={{...s.dropzone,...(dragging?s.dropzoneActive:{})}} onDragOver={e=>{e.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={handleDrop} onClick={()=>document.getElementById("fi").click()}>
-              {loading ? <div style={s.loadingWrap}><div style={s.spinner}/><p style={s.loadingText}>Analysoidaan...</p></div> : <><div style={s.dropIcon}>📄</div><p style={s.dropText}>Vedä PDF tähän tai <span style={s.dropLink}>selaa tiedostoja</span></p><p style={s.dropHint}>Vain PDF-tiedostot</p></>}
+              {loading ? <div style={s.loadingWrap}><div style={s.spinner}/><p style={s.loadingText}>Analysoidaan...</p></div> : <><div style={s.dropIcon}>📄</div><p style={s.dropText}>Vedä PDF tai Word tähän tai <span style={s.dropLink}>selaa tiedostoja</span></p><p style={s.dropHint}>Vain tekstitiedostot</p></>}
             </div>
-            <input id="fi" type="file" accept=".pdf" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])} />
+            <input id="fi" type="file" accept=".pdf,.docx" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])} />
           </div>
         )}
 
@@ -168,6 +176,10 @@ export default function App() {
             </div>
             <div style={s.piiPanel}>
               <div style={s.panelHeader}><span style={s.panelTitle}>Tunnistetut tiedot</span></div>
+              <div style={{marginBottom:8,display:"flex",gap:6}}>
+                <button style={{background:"#E8001C",color:"#fff",border:"none",borderRadius:6,padding:"8px 14px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>handleRemoveAllOfType("ORG")}>Poista kaikki ORG</button>
+                <button style={{...s.secondaryBtn,fontSize:10,padding:"4px 10px"}} style={{background:"#E8001C",color:"#fff",border:"none",borderRadius:6,padding:"8px 14px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>handleRemoveAllOfType("HLÖ")}>Poista kaikki HLÖ</button>
+              </div>
               <div style={s.cardList}>
                 {mappings.map((m,i) => {
                   const ts = getTS(m.type_code)
@@ -182,12 +194,12 @@ export default function App() {
               </div>
               <div style={s.manualBox}>
                 <p style={s.manualTitle}>Lisaa manuaalisesti</p>
-                <input style={s.manualInput} placeholder="esim. Screaming Coconut Ou" value={manualValue} onChange={e=>setManualValue(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAddManual()} />
+                <input style={s.manualInput} placeholder="Kirjoita arvo..." value={manualValue} onChange={e=>setManualValue(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAddManual()} />
                 <div style={s.manualRow}>
                   <select style={s.manualSelect} value={manualType} onChange={e=>setManualType(e.target.value)}>
                     <option value="CUSTOM">Muu</option><option value="PERSON">Henkilo</option><option value="ORGANIZATION">Organisaatio</option><option value="LOCATION">Sijainti</option>
                   </select>
-                  <button style={s.secondaryBtn} onClick={handleAddManual}>Lisaa</button>
+                  <button style={{background:"#E8001C",color:"#fff",border:"none",borderRadius:6,padding:"8px 14px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}} onClick={handleAddManual}>Lisaa</button>
                 </div>
               </div>
             </div>

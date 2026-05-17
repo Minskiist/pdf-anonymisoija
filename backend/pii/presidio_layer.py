@@ -93,11 +93,14 @@ def find_pii_presidio(text: str, language: str = "fi") -> list[PresidioMatch]:
     if analyzer is None:
         return []
     try:
-        results = analyzer.analyze(text=text, language=language, entities=PRESIDIO_ENTITIES, score_threshold=0.6)
+        results = analyzer.analyze(text=text, language=language, entities=PRESIDIO_ENTITIES, score_threshold=0.75)
         matches = []
         for result in results:
             value = text[result.start:result.end]
             if result.entity_type == "ORGANIZATION" and _is_job_title(value):
+                continue
+            # Suodatetaan liian lyhyet arvot pois
+            if len(value.strip()) < 3:
                 continue
             matches.append(PresidioMatch(value=value, pii_type=result.entity_type, confidence=float(result.score), start=result.start, end=result.end, language=language))
         return matches
@@ -111,7 +114,7 @@ def find_pii_presidio_entities(text: str, language: str, entities: list[str]) ->
     if analyzer is None:
         return []
     try:
-        results = analyzer.analyze(text=text, language=language, entities=entities, score_threshold=0.6)
+        results = analyzer.analyze(text=text, language=language, entities=entities, score_threshold=0.75)
         return [PresidioMatch(value=text[r.start:r.end], pii_type=r.entity_type, confidence=float(r.score), start=r.start, end=r.end, language=language) for r in results if not _is_job_title(text[r.start:r.end])]
     except Exception as e:
         logger.error(f"Presidio-analyysi epaonnistui: {e}")

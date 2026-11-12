@@ -1,5 +1,27 @@
 # PDF-anonymisoija
 
+## In English
+
+A tool that removes personal data from PDF documents before they are sent to an AI model, and puts it back into the AI's answer afterwards.
+
+**How it works**
+
+1. Upload a PDF. The backend finds personal data in layers:
+   - Regex rules for Finnish identifiers: personal identity code (HETU), business ID (Y-tunnus), IBAN, cards, IP and email addresses
+   - Microsoft Presidio + spaCy (Finnish and English models) for names, organisations, places and phone numbers
+   - OpenAI Privacy Filter, a local token classification model from Hugging Face, for English texts
+   - A local LLM (Qwen3 via Ollama) for contextual and unclear cases. Its findings are marked uncertain and need human confirmation.
+2. Review the findings: accept, reject or add values by hand.
+3. Anonymise. Values are replaced with placeholders such as `⟦HLÖ_0001⟧`.
+4. Paste the text into ChatGPT, Gemini or Claude.
+5. Paste the AI's answer back. The original values are restored, also as a PDF.
+
+**Stack:** Python, FastAPI, Pydantic, React (Vite), Ollama, Presidio, spaCy, PyMuPDF, ReportLab, encrypted SQLite session store with automatic expiry, pytest.
+
+The personal data never leaves your machine: detection runs locally and only the anonymised text goes to the external AI. The rest of this README is in Finnish.
+
+---
+
 Työkalu PDF-dokumenttien henkilötietojen anonymisointiin ennen tekoälylle lähettämistä.
 
 ## Toimintaperiaate
